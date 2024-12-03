@@ -4,19 +4,20 @@
     <meta charset="utf-8">
     <title>Vanilla Frontend</title>
 
-    <script src="app.js" defer type="module"></script>
+    <script type="module" src="src/app.js" defer></script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="src/styles/main.css">
 </head>
 
 <body>
     <header>
       <h1>Logo</h1>
       <nav>
-        <a id="linkHome" href="/">Home</>
+        <a id="linkHome" class="router-link" href="/">Home</>
+        <a id="link-user-1" class="router-link" href="/users/1">User 1</>
       </nav>
     </header>
 
-    <main></main>
+    <main id="app"></main>
 </body>
 </html>
