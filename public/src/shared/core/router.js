@@ -60,7 +60,9 @@ class HistoryRouter {
 
   renderView(route, params) {
     const app = document.getElementById('app');
-    app.innerHTML = route.render(params);
+    route.render(params, (content) => {
+      app.innerHTML = content
+    });
 
     if (route.onEnter) route.onEnter(params);
   }
