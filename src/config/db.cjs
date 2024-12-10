@@ -1,10 +1,7 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-import 'dotenv/config'
+const path = require('path')
+require('dotenv').config()
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const config = {
+module.exports = {
   dialect: 'postgres',
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -36,5 +33,3 @@ const config = {
     }
   } : {},
 }
-
-export default config

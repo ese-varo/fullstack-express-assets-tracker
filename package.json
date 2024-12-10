@@ -5,7 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "db:migrate": "dotenv -f .env -- npx sequelize-cli db:migrate",
+    "db:migrate:undo": "dotenv -f .env -- npx sequelize-cli db:migrate:undo",
+    "db:seed": "dotenv -f .env -- npx sequelize-cli db:seed:all"
   },
   "type": "module",
   "keywords": [],
@@ -20,6 +23,7 @@
     "sequelize": "^6.37.5"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.4.4",
     "eslint": "^9.16.0",
     "nodemon": "^3.1.7",
     "sequelize-cli": "^6.6.2"
