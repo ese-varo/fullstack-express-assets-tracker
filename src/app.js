@@ -1,20 +1,36 @@
 import express from 'express'
 import { fileURLToPath } from 'url'
 import path from 'path'
-import DatabaseService from './services/database.js'
+import fs from 'fs'
+import UserRoutes from './routes/userRoutes.js'
+import RouteLoader from './routes/routeLoader.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 class App {
-  constructor() {
-    this.app = express()
+  constructor(dependencies = {}) {
+    const {
+      expressApp = express(),
+      dbService,
+      userService,
+      logger = console
+    } = dependencies
+    this.app = expressApp
+    this.services = {
+      dbService,
+      userService
+    }
+    this.logger = logger
     this.server = null
-    this.dbService = new DatabaseService()
-    this.isShuttingDown = false
+    this.routeLoader = new RouteLoader(this.app, this.services)
+  }
+
+  async initialize() {
     this.initializeMiddlewares()
     this.initializeRoutes()
     this.initializeDatabase()
+    return this
   }
 
   initializeMiddlewares() {
@@ -30,17 +46,15 @@ class App {
     })
   }
 
-  initializeRoutes() {
-    this.app.get('/api/users', (req, res) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.json([{ id: 1, name: 'Alice' }, { id: 2, name: 'Tyler' }])
-    })
+  async initializeRoutes() {
+    const routesDir = path.join(__dirname, 'routes')
+    await this.routeLoader.loadRoutes(routesDir)
   }
 
   async initializeDatabase() {
     try {
-      await this.dbService.testConnection()
-      await this.dbService.syncDatabase(
+      await this.services.dbService.testConnection()
+      await this.services.dbService.syncDatabase(
         process.env.NODE_ENV === 'development'
       )
     } catch (error) {
@@ -58,36 +72,40 @@ class App {
   }
 
   setupGracefulShutdown() {
-    const shutdown = async (signal) => {
-      if (this.isShuttingDown) return
-      this.isShuttingDown = true
+    const signals = ['SIGINT', 'SIGTERM']
 
-      console.log(`Received ${signal}. Starting graceful shutdown...`)
+    const shutdown = async (signal) => {
+      this.logger.info(`Received ${signal}. Starting graceful shutdown...`)
 
       try {
-        if (this.server) {
-          await new Promise((resolve, reject) => {
-            this.server.close((err) => {
-              if (err) reject(err)
-              else resolve()
-            })
-          })
-        }
+        // Parallel shutdown of resources
+        await Promise.all([
+          this.stopServer(),
+          this.services.dbService.closeConnection()
+        ]);
 
-        await this.dbService.closeConnection()
-
-        // Close any other resource connections (e.g., Redis, message queyes)
-        console.log('Graceful shutdown completed successfully')
+        this.logger.info('Graceful shutdown completed successfully')
         process.exit(0)
       } catch (error) {
-        console.log('Error during graceful shutdown: ', error)
+        this.logger.error('Error during graceful shutdown: ', error)
         process.exit(1)
       }
     }
 
-    // Register shutdown handlers
-    process.on('SIGINT', shutdown)
-    process.on('SIGTERM', shutdown)
+    signals.forEach(signal =>
+      process.on(signal, () => shutdown(signal))
+    )
+  }
+
+  async stopServer() {
+    return new Promise((resolve, reject) => {
+      if (!this.server) return resolve()
+
+      this.server.close(err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    });
   }
 }
 
