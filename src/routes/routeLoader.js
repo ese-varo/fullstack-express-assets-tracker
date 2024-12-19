@@ -7,6 +7,11 @@ class RouteLoader {
     this.app = app
   }
 
+  static resourceMapping = {
+    user: 'users',
+    asset: 'assets'
+  }
+
   async loadRoutes(routesDir) {
     const routeFiles = fs.readdirSync(routesDir)
       .filter(file => file.endsWith('Routes.js'))
@@ -27,7 +32,16 @@ class RouteLoader {
         return
       }
 
-      const resourceName = path.basename(routeFilePath).replace('Routes.js', '')
+      const resourceName = path.basename(routeFilePath).replace('Routes.js', '').toLowerCase()
+      const pluralResourceName = RouteLoader.resourceMapping[resourceName]
+
+      if (!pluralResourceName) {
+        throw new Error(
+          `No resource mapping found for "${resourceName}". ` +
+          `Please add the plural form to RouteLoader.resourceMapping`
+        )
+      }
+
       const serviceName = `${resourceName}Service`
       const service = this.services[serviceName]
 
@@ -37,7 +51,7 @@ class RouteLoader {
       }
 
       const routeInstance = new RouteClass(service)
-      const routePath = `/api/${resourceName.toLowerCase()}`
+      const routePath = `/api/${pluralResourceName}`
 
       this.app.use(routePath, routeInstance.getRouter())
       console.log(`Loaded routes for ${routePath}`)
