@@ -52,9 +52,6 @@ export class BasePage extends BaseComponent {
       return
     }
 
-    const activeElement = document.activeElement
-    const selectionStart = activeElement?.selectionStart
-
     this.element.innerHTML = `
       ${this.renderError()}
       ${this.getTemplate()}

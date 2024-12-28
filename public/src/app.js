@@ -18,6 +18,17 @@ const routes = [
       }
     },
     onEnter: (params) => console.log(`Viewing user ${params.id}`)
+  },
+  {
+    path: '/users',
+    render: (_, callback) => callback('<h1>Users list</h1>'),
+    requiredRole: 'admin'
+  },
+  {
+    path: '/signup',
+    component: () => import('./features/authentication/pages/register-form.js')
+      .then(m => m.RegisterPage),
+    onEnter: () => console.log('entered to signup')
   }
 ];
 

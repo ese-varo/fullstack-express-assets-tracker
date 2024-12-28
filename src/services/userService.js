@@ -18,7 +18,6 @@ class UserService {
   }
 
   async findAll(query) {
-    console.log('find all query')
     try {
       const {
         page = 1,
