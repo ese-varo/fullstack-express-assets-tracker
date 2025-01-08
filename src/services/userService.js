@@ -8,15 +8,6 @@ class UserService {
     this.User = dbService.getModel('User')
   }
 
-  async create(userData) {
-    try {
-      const user = await this.User.create(userData)
-      return user
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
   async findAll(query) {
     try {
       const {

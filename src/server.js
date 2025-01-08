@@ -2,14 +2,17 @@ import 'dotenv/config'
 import App from './app.js'
 import DatabaseServiceProvider from './services/database.js'
 import UserService from './services/userService.js'
+import AuthService from './services/authService.js'
 import config from './config/db.js'
 
 
 const dbService = await DatabaseServiceProvider.getInstance(config)
 const userService = new UserService(dbService)
+const authService = new AuthService(dbService)
 const dependencies = {
   dbService,
-  userService
+  userService,
+  authService
 }
 
 async function bootstrap() {

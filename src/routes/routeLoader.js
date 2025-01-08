@@ -9,7 +9,8 @@ class RouteLoader {
 
   static resourceMapping = {
     user: 'users',
-    asset: 'assets'
+    asset: 'assets',
+    auth: 'auth'
   }
 
   async loadRoutes(routesDir) {

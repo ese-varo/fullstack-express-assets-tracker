@@ -14,12 +14,14 @@ class App {
       expressApp = express(),
       dbService,
       userService,
+      authService,
       logger = console
     } = dependencies
     this.app = expressApp
     this.services = {
       dbService,
-      userService
+      userService,
+      authService,
     }
     this.logger = logger
     this.server = null
