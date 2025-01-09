@@ -1,6 +1,12 @@
 import { BasePage } from '../../../shared/components/base-page.js'
 import { AuthService } from '../services/auth-service.js'
 import { debounce } from '../../../shared/utils/helpers.js'
+import {
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+  validateName
+} from '../../../shared/utils/validators.js'
 
 export class RegisterPage extends BasePage {
   constructor() {
@@ -40,27 +46,19 @@ export class RegisterPage extends BasePage {
   validateField(name, value) {
     switch(name) {
       case 'firstName':
-        if (!value) return 'First Name is required'
-        else if (value.length < 3) return 'First Name must be at least 3 characters'
+        return validateName(value, 'First')
         break
       case 'lastName':
-        if (!value) return 'Last Name is required'
-        else if (value.length < 3) return 'Last Name must be at least 3 characters'
+        return validateName(value, 'Last')
         break
       case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!value) return 'Email is required'
-        else if (!emailRegex.test(value)) return 'Invalid email address'
+        return validateEmail(value)
         break
       case 'password':
-        if (!value) return 'Password is required'
-        else if (value.length < 8) return 'Password must be at least 8 characters'
-        else if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter'
-        else if (!/[0-9]/.test(value)) return 'Password must contain at least one number'
+        return validatePassword(value)
         break
       case 'confirmPassword':
-        if (!value) return 'Please confirm your password'
-        else if (value !== this.state.formData.password) return 'Passwords do not match'
+        return validateConfirmPassword(value, this.state.formData.password)
         break
     }
     return ''
@@ -219,7 +217,7 @@ export class RegisterPage extends BasePage {
             class="submit-btn"
             ${isSubmitting ? 'disabled' : ''}
           >
-            Submit
+            Signup
           </button>
 
           <p class="login-link">
