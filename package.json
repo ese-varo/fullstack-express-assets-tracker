@@ -11,6 +11,8 @@
     "preview": "vite preview",
     "db:migrate": "dotenv -f .env -- npx sequelize-cli db:migrate",
     "db:migrate:undo": "dotenv -f .env -- npx sequelize-cli db:migrate:undo",
+    "db:migrate:undo:all": "dotenv -f .env -- npx sequelize-cli db:migrate:undo:all",
+    "db:migrate:reset": "npm run db:migrate:undo:all && npm run db:migrate",
     "db:seed": "dotenv -f .env -- npx sequelize-cli db:seed:all"
   },
   "type": "module",

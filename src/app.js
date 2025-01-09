@@ -56,9 +56,6 @@ class App {
   async initializeDatabase() {
     try {
       await this.services.dbService.testConnection()
-      await this.services.dbService.syncDatabase(
-        process.env.NODE_ENV === 'development'
-      )
     } catch (error) {
       console.error('Database initialization failed:', error)
       process.exit(1)

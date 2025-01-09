@@ -4,15 +4,8 @@ import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 
 class DatabaseService {
-  constructor(config, options = {}) {
+  constructor(config) {
     this.config = config
-    this.options = {
-      sync: {
-        force: false,
-        alter: true,
-        ...options.sync
-      }
-    }
     this.instance = null
     this.models = {}
   }
@@ -64,28 +57,6 @@ class DatabaseService {
     return this.models[modelName]
   }
 
-  async syncDatabase(force = false) {
-    const sequelize = this.getInstance()
-
-    try {
-      const syncOptions = {
-        force: force || this.options.sync.force,
-        alter: this.options.sync.alter
-      }
-
-      if (process.env.NODE_ENV === 'production' && syncOptions.force) {
-        throw new Error('Force sync is not allowed in production environment')
-      }
-
-      await sequelize.sync(syncOptions)
-
-      console.log('Database models synchronized successfully')
-    } catch (error) {
-      console.error('Failed to synchronize database:', error)
-      throw error
-    }
-  }
-
   async testConnection() {
     try {
       await this.getInstance().authenticate()
@@ -107,9 +78,9 @@ class DatabaseService {
 class DatabaseServiceProvider {
   static #instance = null
 
-  static async getInstance(config, options = {}) {
+  static async getInstance(config) {
     if (!this.#instance) {
-      this.#instance = new DatabaseService(config, options)
+      this.#instance = new DatabaseService(config)
       await this.#instance.initialize()
     }
     return this.#instance
