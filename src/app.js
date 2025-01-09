@@ -36,15 +36,16 @@ class App {
   }
 
   initializeMiddlewares() {
-    // Serve static files from the public directory
-    this.app.use(express.static(path.join(__dirname, '../public')))
+    const staticPath = process.env.NODE_ENV === 'production' ? '../dist' : '../public'
+    // Serve static files from the public/dist directory
+    this.app.use(express.static(path.join(__dirname, staticPath)))
     this.app.use(express.json())
     // Catch-all route for SPA
     this.app.use((req, res, next) => {
       if (req.path.startsWith('/api/') || req.path.includes('.')) {
         return next()
       }
-      res.sendFile(path.join(__dirname, '../public', 'index.html'))
+      res.sendFile(path.join(__dirname, staticPath, 'index.html'))
     })
   }
 

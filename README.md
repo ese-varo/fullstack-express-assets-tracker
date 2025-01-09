@@ -56,9 +56,16 @@ npm install
     ```
     npm run db:migrate
     ```
-4. Start the development server:
+4. Start the project in development env:
   ```
-  npm run dev
+  npm run dev           # Terminal 1
+  npm run dev:frontend  # Terminal 2
+  ```
+
+5. Project start in production env:
+  ```
+  npm run build # Creates dist/ directory
+  npm run start # Serves frontend + API
   ```
 ### Usage
 1. Access the application in your browser at http://localhost:3000 or the port you've configured.
