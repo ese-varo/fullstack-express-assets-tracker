@@ -1,14 +1,15 @@
 import { BasePage } from '../../../shared/components/base-page.js'
 import { AuthService } from '../services/auth-service.js'
+import { debounce } from '../../../shared/utils/helpers.js'
 
 export class RegisterPage extends BasePage {
   constructor() {
     super()
     this.authService = new AuthService()
-    this.debouncedValidate = this.debounce((input) => {
+    this.debouncedValidate = debounce((input) => {
       const error = this.validateField(input.name, input.value)
       this.handleFieldError(input, error)
-    }, 500)
+    }, 500).bind(this)
     this.state = {
       formData: {
         firstName: '',
@@ -33,16 +34,6 @@ export class RegisterPage extends BasePage {
     super.setupEventListeners()
     this.delegateEvent('input', 'input', this.handleInput)
     this.delegateEvent('submit', 'form', this.handleSubmit)
-  }
-
-  debounce(func, wait) {
-    let timeout
-    return (...args) => {
-      clearTimeout(timeout)
-      timeout = setTimeout(() => {
-        func.apply(this, args)
-      }, wait)
-    }
   }
 
   // Single field validation
