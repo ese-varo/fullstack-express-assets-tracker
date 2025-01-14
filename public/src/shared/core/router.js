@@ -74,6 +74,7 @@ class HistoryRouter {
       if (guardCheck.error) {
         // TODO: implement notifications system
         // Handle unauthorized access (could show a notification)
+        // 2. Review session expiration time implementation
         stateManager.setState({
           notification: {
             type: 'error',
