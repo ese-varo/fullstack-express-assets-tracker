@@ -55,10 +55,7 @@ class AuthService {
 
       const absoluteExpiry = Date.now() + this.ABSOLUTE_EXPIRY
       const tokens = await this.generateTokens(user, absoluteExpiry)
-      return {
-        user: user.toJSON(),
-        ...tokens
-      }
+      return tokens
     } catch (error) {
       throw this.handleError(error)
     }

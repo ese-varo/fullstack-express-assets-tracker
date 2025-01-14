@@ -39,8 +39,7 @@ class AuthController {
         })
       }
 
-      const { user, tokens } = await this.authService.login(req.body)
-      // const tokens = await this.authService.generateTokens(user)
+      const tokens = await this.authService.login(req.body)
 
       res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
@@ -51,10 +50,7 @@ class AuthController {
 
       res.json({
         status: 'success',
-        data: {
-          user,
-          accessToken: tokens.accessToken
-        }
+        data: { accessToken: tokens.accessToken }
       })
     } catch (error) {
       res.status(error.status || 500).json({

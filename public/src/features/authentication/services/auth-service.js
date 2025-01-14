@@ -4,6 +4,26 @@ export class AuthService {
   constructor() {
     this.baseUrl = '/api/auth'
     this.accessToken = localStorage.getItem('accessToken')
+    this.initializeAuthState()
+  }
+
+  initializeAuthState() {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      const userData = this.decodeToken(token)
+      stateManager.setState(userData, 'user')
+    }
+  }
+
+  decodeToken(token) {
+    try {
+      const base64Url = token.split('.')[1]
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+      return JSON.parse(window.atob(base64))
+    } catch (error) {
+      console.error('Token decode failed:', error)
+      return null
+    }
   }
 
   async signup(userData) {
@@ -45,18 +65,8 @@ export class AuthService {
         throw new Error(error.message || 'Login failed')
       }
 
-      const data = await response.json()
-
-      // Store user data in state
-      stateManager.setState({
-        user: data.data.user
-      }, 'user')
-
-      // Store access token
-      this.accessToken = data.data.accessToken
-      localStorage.setItem('accessToken', this.accessToken)
-
-      return data.data.user
+      const { data } = await response.json()
+      localStorage.setItem('accessToken', data.accessToken)
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -131,7 +141,11 @@ export class AuthService {
     }
   }
 
+  getAuthenticatedUser() {
+    return this.accessToken ? this.decodeToken(this.accessToken) : null
+  }
+
   isAuthenticated() {
-    return !!localStorage.getItem('token')
+    return !!localStorage.getItem('accessToken')
   }
 }

@@ -1,16 +1,16 @@
-import stateManager from './state-manager.js'
+import { AuthService } from '../../features/authentication/services/auth-service.js'
+import { stateManager } from './state-manager.js'
 
 class HistoryRouter {
   constructor(routes) {
     this.routes = routes;
-    this.loadingElement = this.createLoadingElement()
-    this.init();
-  }
+    this.authService = new AuthService()
+    this.authenticatedRoutes = new Set(['/users', '/assets'])
+    this.publicOnlyRoutes = new Set(['/login', '/signup'])
+    this.defaultAuthRedirect = '/login'
+    this.defaultHomeRedirect = '/'
 
-  createLoadingElement() {
-    const elem = document.createElement('div')
-    elem.innerHTML = '<div class="loading">Loading...</div>'
-    return elem
+    this.init();
   }
 
   init() {
@@ -22,40 +22,82 @@ class HistoryRouter {
         this.navigate(link.getAttribute('href'));
       }
     });
-    this.handleRouteChange();
+  }
+
+  async checkRouteGuards(pathname) {
+    const user = stateManager.getState('user')
+    const isAuthenticated = !!user
+
+    const route = this.findMatchingRoute(pathname)
+
+    if (!route) return { allowed: true }
+
+    // Handle public-only routes (login/signup)
+    if (this.publicOnlyRoutes.has(pathname) && isAuthenticated) {
+      return {
+        allowed: false,
+        redirect: this.defaultHomeRedirect
+      }
+    }
+
+    // Handle protected routes
+    if (this.authenticatedRoutes.has(pathname)) {
+      if (!isAuthenticated) {
+        return {
+          allowed: false,
+          redirect: `${this.defaultAuthRedirect}?redirect=${encodeURIComponent(pathname)}`
+        }
+      }
+    }
+
+    // Check role-based access if required
+    if (route.requiredRole && user.role !== route.requiredRole) {
+      return {
+        allowed: false,
+        redirect: this.defaultHomeRedirect,
+        error: 'Insuficcient permissions'
+      }
+    }
+
+    return { allowed: true }
   }
 
   async handleRouteChange() {
-    const path = window.location.pathname;
-    const matchedRoute = this.findMatchingRoute(path);
+    const pathname = window.location.pathname;
 
-    if (!matchedRoute) {
+    // Check route guards
+    const guardCheck = await this.checkRouteGuards(pathname)
+
+    if (!guardCheck.allowed) {
+      if (guardCheck.error) {
+        // TODO: implement notifications system
+        // Handle unauthorized access (could show a notification)
+        stateManager.setState({
+          notification: {
+            type: 'error',
+            message: guardCheck.error
+          }
+        }, 'notifications')
+      }
+      this.navigate(guardCheck.redirect)
+      return
+    }
+
+    // Proceed with normal route handling
+    const route = this.findMatchingRoute(pathname)
+    if (!route) {
       this.renderNotFound()
       return
     }
 
-    // Check authentication and authorization
-    const user = stateManager.getState('user')
-    if (matchedRoute.requiredRole && (!user || user.role !== matchedRoute.requiredRole)) {
-      this.renderUnauthorized()
-      return
+    // Call onEnter hook if exists
+    if (route.onEnter) {
+      const params = this.extractRouteParams(route.path, pathname)
+      route.onEnter(params)
     }
 
-    try {
-      const app = document.getElementById('app')
-      app.appendChild(this.loadingElement)
-
-      const params = this.extractParams(matchedRoute.path, path)
-      await this.renderView(matchedRoute, params)
-    } catch (error) {
-      console.error('Route error:', error)
-      this.renderError(error)
-    } finally {
-      const app = document.getElementById('app')
-      if (app.contains(this.loadingElement)) {
-        app.removeChild(this.loadingElement)
-      }
-    }
+    // Render the route
+    await this.renderRoute(route, pathname)
   }
 
   findMatchingRoute(path) {
@@ -75,7 +117,7 @@ class HistoryRouter {
     );
   }
 
-  extractParams(routePath, currentPath) {
+  extractRouteParams(routePath, currentPath) {
     const routeParts = routePath.split('/');
     const pathParts = currentPath.split('/');
 
@@ -87,30 +129,19 @@ class HistoryRouter {
     }, {});
   }
 
-  async renderView(route, params) {
+  async renderRoute(route, pathname) {
     const app = document.getElementById('app');
+    const params = this.extractRouteParams(route.path, pathname)
 
-    // If component is a function, it's a lazy load
-    if (typeof route.component === 'function') {
+    if (route.component) {
       const Component = await route.component()
       const instance = new Component()
       instance.mount(app)
-      if (route.onEnter) route.onEnter(params)
-      return
-    }
-
-    if (route.render) {
-      route.render(params, (content) => {
-        app.innerHTML = content
+    } else if (route.render) {
+      route.render(params, (html) => {
+        app.innerHTML = html
       })
-      if (route.onEneter) route.onEnter(params)
-      return
     }
-  }
-
-  renderUnauthorized() {
-    const app = document.getElementById('app')
-    app.innerHTML = '<h1>Unauthorized Access</h1>'
   }
 
   renderError(error) {
@@ -126,10 +157,8 @@ class HistoryRouter {
     app.innerHTML = '<h1>Page Not Found</h1>';
   }
 
-  navigate(path, pushState = true) {
-    if (pushState) {
-      window.history.pushState({}, '', path);
-    }
+  navigate(path) {
+    window.history.pushState(null, '', path);
     this.handleRouteChange();
   }
 }

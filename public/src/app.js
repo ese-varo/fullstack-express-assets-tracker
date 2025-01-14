@@ -1,35 +1,46 @@
-import HistoryRouter from './shared/core/router.js';
+import { AuthService } from './features/authentication/services/auth-service.js'
+import { stateManager } from './shared/core/state-manager.js'
+import { router } from './routes.js'
 
-const routes = [
-  {
-    path: '/',
-    render: (_, callback) => callback('<h1>Home Page</h1>'),
-    onEnter: () => console.log('Entered Home')
-  },
-  {
-    path: '/users/:id',
-    render: async (params, callback) => {
-      try {
-        const response = await fetch('/api/users')
-        const data = await response.json()
-        callback(`<h1>${data[0].name}</h1>`)
-      } catch (error) {
-        callback(`<h1>Error loading user</h1>`)
-      }
-    },
-    onEnter: (params) => console.log(`Viewing user ${params.id}`)
-  },
-  {
-    path: '/users',
-    render: (_, callback) => callback('<h1>Users list</h1>'),
-    requiredRole: 'admin'
-  },
-  {
-    path: '/signup',
-    component: () => import('./features/authentication/pages/register-form.js')
-      .then(m => m.RegisterPage),
-    onEnter: () => console.log('entered to signup')
+class App {
+  constructor() {
+    this.authService = new AuthService()
   }
-];
 
-const router = new HistoryRouter(routes);
+  async initialize() {
+    try {
+      const token = localStorage.getItem('accessToken')
+      if (token) {
+        const userData = this.authService.decodeToken(token)
+
+        if (userData.exp * 1000 < Date.now()) {
+          // Token expired
+          localStorage.removeItem('accessToken')
+          router.navigate('/login')
+          return
+        }
+
+        stateManager.setState(userData, 'user')
+      }
+
+      router.handleRouteChange()
+
+      window.addEventListener('unhandledrejection', this.handleError)
+    } catch (error) {
+      console.error('App initialization failed:', error)
+      router.navigate('/login')
+    }
+  }
+
+  handleError(event) {
+    console.error('Unhandled error:', event.reason)
+    if(event.reason?.message?.includes('unauthorized')) {
+      router.navigate('/login')
+    }
+  }
+}
+
+const app = new App()
+app.initialize()
+
+export default app

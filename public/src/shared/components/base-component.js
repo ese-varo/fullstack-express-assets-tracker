@@ -1,3 +1,5 @@
+import { AuthService } from '../../features/authentication/services/auth-service.js'
+
 export class BaseComponent {
   constructor() {
     this.state = {}
@@ -31,10 +33,11 @@ export class BaseComponent {
     throw new Error('render() method must be implemented')
   }
 
-  // Helper method for role-based access control
+  // NOTE: useful for role-based access control, e.g. crud actions
   checkAccess(requiredRole) {
-    const user = stateManager.getState('user')
-    return user && user.role === requiredRole
+    const auth = new AuthService()
+    const currentUser = auth.getAuthenticagedUser()
+    return currentUser && currentUser.role === requiredRole
   }
 
   // Helper method for event delegation

@@ -116,12 +116,9 @@ export class RegisterPage extends BasePage {
     try {
       this.setState({ isSubmitting: true })
 
-      // await this.authService.signup(this.state.formData)
-
+      await this.authService.signup(this.state.formData)
       // Redirect to login page
-      // window.location.href = '/login'
-      const res = await this.authService.signup(this.state.formData)
-      console.log('res on submit:', res)
+      window.location.href = '/login'
     } catch (error) {
       this.setState({
         errors: {
