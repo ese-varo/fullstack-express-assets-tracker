@@ -69,6 +69,11 @@ export default (sequelize, DataTypes) => {
     refreshToken: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    role: {
+      type: DataTypes.ENUM('admin', 'manager'),
+      allowNull: false,
+      defaultValue: 'manager'
     }
   }, {
     sequelize,
