@@ -1,4 +1,4 @@
-import { AuthService } from './features/authentication/services/auth-service.js'
+import { AuthService } from './features/authentication/services/authService.js'
 import { stateManager } from './shared/core/state-manager.js'
 import { router } from './routes.js'
 

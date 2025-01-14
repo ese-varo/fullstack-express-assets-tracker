@@ -1,4 +1,4 @@
-import { AuthService } from '../../features/authentication/services/auth-service.js'
+import { AuthService } from '../../features/authentication/services/authService.js'
 
 export class BaseComponent {
   constructor() {

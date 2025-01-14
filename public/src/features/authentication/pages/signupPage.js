@@ -1,9 +1,14 @@
 import { BasePage } from '../../../shared/components/base-page.js'
-import { AuthService } from '../services/auth-service.js'
+import { AuthService } from '../services/authService.js'
 import { debounce } from '../../../shared/utils/helpers.js'
-import { validatePassword, validateEmail } from '../../../shared/utils/validators.js'
+import {
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+  validateName
+} from '../../../shared/utils/validators.js'
 
-export class LoginPage extends BasePage {
+export class SignupPage extends BasePage {
   constructor() {
     super()
     this.authService = new AuthService()
@@ -13,12 +18,18 @@ export class LoginPage extends BasePage {
     }, 500).bind(this)
     this.state = {
       formData: {
-        email: '',
-        password: ''
-      },
-      errors: {
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
+        confirmPassword: ''
+      },
+      errors: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
         general: ''
       },
       isSubmitting: false
@@ -31,9 +42,26 @@ export class LoginPage extends BasePage {
     this.delegateEvent('submit', 'form', this.handleSubmit)
   }
 
+  // Single field validation
   validateField(name, value) {
-    if (name === 'email') return validateEmail(value)
-    else if (name === 'password') return validatePassword(value)
+    switch(name) {
+      case 'firstName':
+        return validateName(value, 'First')
+        break
+      case 'lastName':
+        return validateName(value, 'Last')
+        break
+      case 'email':
+        return validateEmail(value)
+        break
+      case 'password':
+        return validatePassword(value)
+        break
+      case 'confirmPassword':
+        return validateConfirmPassword(value, this.state.formData.password)
+        break
+    }
+    return ''
   }
 
   async handleInput(event, input) {
@@ -57,6 +85,7 @@ export class LoginPage extends BasePage {
   }
 
   validateForm() {
+    // clear general error
     const generalErrorEl = this.element.querySelector('.error-message.general')
     if (generalErrorEl) {
       this.state.errors.general = ''
@@ -86,15 +115,15 @@ export class LoginPage extends BasePage {
 
     try {
       this.setState({ isSubmitting: true })
-      await this.authService.login(this.state.formData)
-      // TODO: Implement redirection
-      // look for redirect query param for redirection
-      window.location.href = '/users'
+
+      await this.authService.signup(this.state.formData)
+      // Redirect to login page
+      window.location.href = '/login'
     } catch (error) {
       this.setState({
         errors: {
           ...this.state.errors,
-          general: error.message || 'Login failed. Please try again'
+          general: error.message || 'Registration failed. Please try again'
         }
       })
     } finally {
@@ -105,8 +134,8 @@ export class LoginPage extends BasePage {
   getTemplate() {
     const { formData, errors, isSubmitting } = this.state
     return `
-      <div class="login-page">
-        <h1>Login</h1>
+      <div class="registration-page">
+        <h1>Create Account</h1>
 
         ${errors.general ? `
           <div class="error-message general">
@@ -114,7 +143,33 @@ export class LoginPage extends BasePage {
           </div>
         ` : ''}
 
-        <form class="login-form">
+        <form class="registration-form">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value="${formData.firstName}"
+              ${isSubmitting ? 'disabled' : ''}
+              class="${errors.firstName ? 'error' : ''}"
+            />
+            <span class="error-text">${errors.firstName || ''}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value="${formData.lastName}"
+              ${isSubmitting ? 'disabled' : ''}
+              class="${errors.lastName ? 'error' : ''}"
+            />
+            <span class="error-text">${errors.lastName || ''}</span>
+          </div>
+
           <div class="form-group">
             <label for="email">Email</label>
             <input
@@ -141,17 +196,30 @@ export class LoginPage extends BasePage {
             <span class="error-text">${errors.password || ''}</span>
           </div>
 
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value="${formData.confirmPassword}"
+              ${isSubmitting ? 'disabled' : ''}
+              class="${errors.confirmPassword ? 'error' : ''}"
+            />
+            <span class="error-text">${errors.confirmPassword || ''}</span>
+          </div>
+
           <button
             type="submit"
             class="submit-btn"
             ${isSubmitting ? 'disabled' : ''}
           >
-            Login
+            Signup
           </button>
 
           <p class="login-link">
-            Don't have an account?
-            <a href="/signup" class="router-link">Signup</a>
+            Already have an account?
+            <a href="/login" class="router-link">Log in</a>
           </p>
         </form>
       </div>

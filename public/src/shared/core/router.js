@@ -1,4 +1,4 @@
-import { AuthService } from '../../features/authentication/services/auth-service.js'
+import { AuthService } from '../../features/authentication/services/authService.js'
 import { stateManager } from './state-manager.js'
 
 class HistoryRouter {
@@ -52,6 +52,8 @@ class HistoryRouter {
 
     // Check role-based access if required
     if (route.requiredRole && user.role !== route.requiredRole) {
+      console.log('insuficcient permissions')
+      console.log(`only ${route.requiredRole} users, you're a ${user.role}`)
       return {
         allowed: false,
         redirect: this.defaultHomeRedirect,
