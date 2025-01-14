@@ -68,7 +68,7 @@ npm install
   npm run start # Serves frontend + API
   ```
 ### Usage
-1. Access the application in your browser at http://localhost:3000 or the port you've configured.
+1. Access the application in your browser at http://localhost:5173 or the port you've configured.
 2. Register a new admin account (PENDING implementing an initial admin creation mechanism or seed the database with an admin user).
 3. Log in as the admin and invite asset manager users.
 4. Manage assets using the provided functionalities.
