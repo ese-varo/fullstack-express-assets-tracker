@@ -1,14 +1,14 @@
 import { BasePage } from '../../../shared/components/base-page.js'
 import { AuthService } from '../services/authService.js'
 import { debounce } from '../../../shared/utils/helpers.js'
-import { validatePassword, validateEmail } from '../../../shared/utils/validators.js'
+import { validateLoginField } from '../../../shared/utils/validators.js'
 
 export class LoginPage extends BasePage {
   constructor() {
     super()
     this.authService = new AuthService()
     this.debouncedValidate = debounce((input) => {
-      const error = this.validateField(input.name, input.value)
+      const error = validateLoginField(input.name, input.value)
       this.handleFieldError(input, error)
     }, 500).bind(this)
     this.state = {
@@ -29,11 +29,6 @@ export class LoginPage extends BasePage {
     super.setupEventListeners()
     this.delegateEvent('input', 'input', this.handleInput)
     this.delegateEvent('submit', 'form', this.handleSubmit)
-  }
-
-  validateField(name, value) {
-    if (name === 'email') return validateEmail(value)
-    else if (name === 'password') return validatePassword(value)
   }
 
   async handleInput(event, input) {
@@ -66,7 +61,7 @@ export class LoginPage extends BasePage {
     const errorKeys = Object.keys(this.state.formData)
     let errors = {}
     errorKeys.map((key) => {
-      errors[key] = this.validateField(key, this.state.formData[key])
+      errors[key] = validateLoginField(key, this.state.formData[key])
     })
 
     return { ...errors, general: '' }
