@@ -1,5 +1,5 @@
 import { AuthService } from '../../features/authentication/services/authService.js'
-import { stateManager } from './state-manager.js'
+import { stateManager } from './stateManager.js'
 
 class HistoryRouter {
   constructor(routes) {
@@ -21,6 +21,10 @@ class HistoryRouter {
         e.preventDefault();
         this.navigate(link.getAttribute('href'));
       }
+    });
+    window.addEventListener('auth:unauthorized', (e) => {
+      const { type, path } = e.detail
+      this.navigate(`/login?redirect=${encodeURIComponent(path)}`)
     });
   }
 

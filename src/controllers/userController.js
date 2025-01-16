@@ -13,7 +13,6 @@ class UserController {
         ...result
       })
     } catch (error) {
-      console.log('Into error')
       res.status(error.status || 500).json({
         status: 'error',
         message: error.message

@@ -1,6 +1,6 @@
 import { AssetsService } from '../services/assetsService.js'
 import { BasePage } from '../../../shared/components/base-page.js'
-import { stateManager } from '../../../shared/core/state-manager.js'
+import { stateManager } from '../../../shared/core/stateManager.js'
 
 export class AssetsPage extends BasePage {
   constructor() {

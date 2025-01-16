@@ -67,6 +67,17 @@ export class LoginPage extends BasePage {
     return { ...errors, general: '' }
   }
 
+  handleRedirect() {
+    const queryParams = new URLSearchParams(window.location.search)
+    const redirectUrl = queryParams.get('redirect')
+
+    if (redirectUrl) {
+      window.location.href = redirectUrl
+    } else {
+      window.location.href = '/users'
+    }
+  }
+
   async handleSubmit(event, form) {
     event.preventDefault()
 
@@ -82,9 +93,7 @@ export class LoginPage extends BasePage {
     try {
       this.setState({ isSubmitting: true })
       await this.authService.login(this.state.formData)
-      // TODO: Implement redirection
-      // look for redirect query param for redirection
-      window.location.href = '/users'
+      this.handleRedirect()
     } catch (error) {
       this.setState({
         errors: {

@@ -1,6 +1,6 @@
 import { BasePage } from '../../../shared/components/base-page.js'
 import { AssetsService } from '../services/assetsService.js'
-import { stateManager } from '../../../shared/core/state-manager.js'
+import { stateManager } from '../../../shared/core/stateManager.js'
 import { debounce } from '../../../shared/utils/helpers.js'
 import { capitalize } from '../../../shared/utils/strings.js'
 import { assetTypes } from '../../../shared/utils/validation.js'

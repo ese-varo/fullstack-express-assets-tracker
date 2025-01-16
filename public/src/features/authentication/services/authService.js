@@ -1,4 +1,5 @@
-import { stateManager } from '../../../shared/core/state-manager.js'
+import { stateManager } from '../../../shared/core/stateManager.js'
+import EventBus from '../../../shared/core/eventBus.js'
 
 export class AuthService {
   constructor() {
@@ -75,7 +76,11 @@ export class AuthService {
 
   async makeAuthenticatedRequest(url, options = {}) {
     if (!this.accessToken) {
-      throw new Error('No access token available')
+      EventBus.emit('auth:unauthorized', {
+        type: 'NO_TOKEN',
+        path: window.location.pathname
+      })
+      return Promise.reject()
     }
 
     const response = await fetch(url, {
@@ -87,19 +92,28 @@ export class AuthService {
     })
 
     // Handle 401 (Unauthorized) - Token might be expired
-    if (reponse.status === 401) {
+    if (response.status === 401) {
       try {
         await this.refreshAccessToken()
         // Retry the original request with new token
         return this.makeAuthenticatedRequest(url, options)
       } catch (error) {
         // if refresh fails, redirect to login
-        this.logout()
-        window.location.href = '/login'
+        this.handleUnauthorized(error)
       }
     }
 
     return response
+  }
+
+  async handleUnauthorized() {
+    console.error('Refresh token faild:', error)
+    this.logout()
+    EventBus.emit('auth:unauthorized', {
+      type: 'SESSION_EXPIRED',
+      path: window.location.pathname
+    })
+    return Promise.reject()
   }
 
   async refreshAccessToken() {

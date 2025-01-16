@@ -1,5 +1,5 @@
 import { AuthService } from './features/authentication/services/authService.js'
-import { stateManager } from './shared/core/state-manager.js'
+import { stateManager } from './shared/core/stateManager.js'
 import { router } from './routes.js'
 
 class App {

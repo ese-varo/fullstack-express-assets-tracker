@@ -1,5 +1,5 @@
 import { BaseComponent } from './base-component.js'
-import { stateManager } from '../core/state-manager.js'
+import { stateManager } from '../core/stateManager.js'
 
 export class BasePage extends BaseComponent {
   constructor() {
